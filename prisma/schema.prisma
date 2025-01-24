@@ -6,3 +6,46 @@ datasource db {
   provider = "postgresql"
   url      = env("NESTJS_DATABASE_URL")
 }
+
+model Templates {
+  id               String     @id @default(uuid())
+  name             String
+  categoryId       String     @map("category_id")
+  demoId           String     @map("demo_id")
+  prototypeId      String     @map("prototype_id")
+  positionBehaviour String?   @map("position_behaviour")
+  category         Categories @relation(fields: [categoryId], references: [id])
+  demo             Builds     @relation(name: "DemoRelation", fields: [demoId], references: [id])
+  prototype        Builds     @relation(name: "PrototypeRelation", fields: [prototypeId], references: [id])
+
+  @@map("templates")
+}
+
+model Categories {
+  id       String      @id @default(uuid())
+  name     String
+  templates Templates[]
+
+  @@map("categories")
+}
+
+model Prototypes {
+  id           String @id @default(uuid())
+  modelName    String @map("model_name")
+  aspectRatioX Int    @map("aspect_ratio_x")
+  aspectRatioY Int    @map("aspect_ratio_y")
+  borderWidth  String @map("border_width")
+  borderRadius String @map("border_radius")
+
+  @@map("prototypes")
+}
+
+model Builds {
+  id       String    @id @default(uuid())
+  html     String?
+  css      String?
+  demoTemplates Templates[] @relation(name: "DemoRelation")
+  prototypeTemplates Templates[] @relation(name: "PrototypeRelation")
+
+  @@map("builds")
+}
