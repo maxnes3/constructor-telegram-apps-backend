@@ -19,11 +19,10 @@ export class TemplateCreateRequestDto {
 
   @ApiProperty({
     description: 'The position behaviour of the template.',
-    example: 'isFill',
-    required: false
+    example: 'isFill'
   })
   @IsString()
-  positionBehaviour?: string;
+  positionBehaviour: string;
 
   @ApiProperty({
     description: 'The demo build data.',

@@ -10,15 +10,9 @@ export class PrototypeService {
     return this.prismaService.prototypes.findMany();
   }
 
-  async create(dto: PrototypeCreateRequestDto) {
+  async create(data: PrototypeCreateRequestDto) {
     const newPrototype = await this.prismaService.prototypes.create({
-      data: {
-        modelName: dto.model_name,
-        aspectRatioX: dto.aspect_ratio_x,
-        aspectRatioY: dto.aspect_ratio_y,
-        borderWidth: dto.border_width,
-        borderRadius: dto.border_radius
-      }
+      data
     });
 
     return newPrototype;

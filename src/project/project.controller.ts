@@ -1,6 +1,7 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Res } from '@nestjs/common';
 import { ProjectService } from './project.service';
 import { ProjectRequestDto } from './dto';
+import { Response } from 'express';
 
 @Controller('project')
 export class ProjectController {
@@ -8,7 +9,7 @@ export class ProjectController {
 
   @Post('download')
   @HttpCode(200)
-  async createProjectZip(@Body() dto: ProjectRequestDto) {
-    await this.projectService.createProjectZip(dto);
+  async createProjectZip(@Body() dto: ProjectRequestDto, @Res() res: Response) {
+    await this.projectService.createProjectZip(dto, res);
   }
 }

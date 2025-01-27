@@ -47,4 +47,15 @@ export class TemplateService {
 
     return newTemplate;
   }
+
+  async getTemplatesByIds(ids: string[]) {
+    return this.prismaService.templates.findMany({
+      where: {
+        id: { in: ids }
+      },
+      include: {
+        prototype: true
+      }
+    });
+  }
 }
