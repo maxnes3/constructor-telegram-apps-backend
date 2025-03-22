@@ -1,12 +1,16 @@
 import { PrismaService } from '@/prisma.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { TemplateCreateRequestDto } from './dto';
+import { BuildService } from '@/build';
 
 @Injectable()
 export class TemplateService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private buildService: BuildService
+  ) {}
 
-  getAll() {
+  async getAll() {
     return this.prismaService.templates.findMany({
       include: { demo: true, prototype: true }
     });
@@ -23,8 +27,26 @@ export class TemplateService {
     }
   }
 
+  async getTemplatesByIds(ids: string[]) {
+    return this.prismaService.templates.findMany({
+      where: {
+        id: { in: ids }
+      },
+      include: {
+        prototype: true
+      }
+    });
+  }
+
   async create(dto: TemplateCreateRequestDto) {
     const { demo, prototype, categoryId, ...rest } = dto;
+
+    const createdDemo = await this.buildService.create(demo);
+    const createdPrototype = await this.buildService.create(prototype);
+
+    if (!createdDemo || !createdPrototype) {
+      throw new BadRequestException('Invalid data in demo or prototype');
+    }
 
     const newTemplate = await this.prismaService.templates.create({
       data: {
@@ -33,10 +55,10 @@ export class TemplateService {
           connect: { id: categoryId }
         },
         demo: {
-          create: demo
+          connect: { id: createdDemo.id }
         },
         prototype: {
-          create: prototype
+          connect: { id: createdPrototype.id }
         }
       },
       include: {
@@ -48,13 +70,10 @@ export class TemplateService {
     return newTemplate;
   }
 
-  async getTemplatesByIds(ids: string[]) {
-    return this.prismaService.templates.findMany({
+  async deleteById(id: string) {
+    return this.prismaService.templates.delete({
       where: {
-        id: { in: ids }
-      },
-      include: {
-        prototype: true
+        id
       }
     });
   }

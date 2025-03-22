@@ -19,8 +19,10 @@
     "baseUrl": "./",
     "paths": {
       "@/*": ["./src/*"],
-      "@auth/*": ["./src/auth/*"],
-      "@user/*": ["./src/user/*"],
+      "@build/*": ["./src/build/*"],
+      "@category/*": ["./src/category/*"],
+      "@project/*": ["./src/project/*"],
+      "@template/*": ["./src/template/*"]
     }
   }
 }

@@ -6,7 +6,7 @@ import { CategoryCreateRequestDto } from './dto';
 export class CategoryService {
   constructor(private prismaService: PrismaService) {}
 
-  getAll() {
+  async getAll() {
     return this.prismaService.categories.findMany();
   }
 

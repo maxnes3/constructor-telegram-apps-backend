@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { TemplateService } from '@/template/template.service';
-import { ProjectRequestDto } from './dto/project.request';
+import { TemplateService } from '@template/index';
+import { ProjectRequestDto } from './dto';
 import { Response } from 'express';
 import * as archiver from 'archiver';
 import * as fs from 'fs';
@@ -30,8 +30,8 @@ export class ProjectService {
       this.createReactComponent(
         projectDir,
         componentName,
-        template.prototype.html,
-        template.prototype.css
+        template.prototype.jsx,
+        template.prototype.scss
       );
     });
 

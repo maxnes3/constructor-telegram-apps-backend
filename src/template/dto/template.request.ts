@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { BuildCreateDto } from './build';
+import { BuildCreateDto } from '@build/index';
 import { IsString } from 'class-validator';
 
 export class TemplateCreateRequestDto {

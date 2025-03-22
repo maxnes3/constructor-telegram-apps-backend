@@ -29,21 +29,11 @@ model Categories {
   @@map("categories")
 }
 
-model Prototypes {
-  id           String @id @default(uuid())
-  modelName    String @map("model_name")
-  aspectRatioX Int    @map("aspect_ratio_x")
-  aspectRatioY Int    @map("aspect_ratio_y")
-  borderWidth  String @map("border_width")
-  borderRadius String @map("border_radius")
-
-  @@map("prototypes")
-}
-
 model Builds {
   id       String    @id @default(uuid())
-  html     String?
-  css      String?
+  jsx      String?
+  scss     String?
+  props    Json?
   demoTemplates Templates[] @relation(name: "DemoRelation")
   prototypeTemplates Templates[] @relation(name: "PrototypeRelation")
 
