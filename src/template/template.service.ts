@@ -70,7 +70,7 @@ export class TemplateService {
     return newTemplate;
   }
 
-  async deleteById(id: string) {
+  async delete(id: string) {
     return this.prismaService.templates.delete({
       where: {
         id

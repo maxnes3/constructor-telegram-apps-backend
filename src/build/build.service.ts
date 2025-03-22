@@ -8,6 +8,14 @@ import { BuildUtils } from './utils';
 export class BuildService {
   constructor(private prismaService: PrismaService) {}
 
+  async getById(id: string) {
+    return this.prismaService.builds.findUnique({
+      where: {
+        id
+      }
+    });
+  }
+
   async create(dto: BuildCreateDto) {
     const { props, ...data } = dto;
 
@@ -37,6 +45,14 @@ export class BuildService {
         jsx,
         scss,
         props: JSON.stringify(props) as Prisma.InputJsonValue
+      }
+    });
+  }
+
+  async delete(id: string) {
+    return this.prismaService.builds.delete({
+      where: {
+        id
       }
     });
   }

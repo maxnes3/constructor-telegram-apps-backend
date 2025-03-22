@@ -27,4 +27,12 @@ export class CategoryService {
     });
     return newCategory;
   }
+
+  async delete(id: string) {
+    return this.prismaService.categories.delete({
+      where: {
+        id
+      }
+    });
+  }
 }

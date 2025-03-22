@@ -74,6 +74,6 @@ export class TemplateController {
     description: 'Internal server error. Failed to delete the template.'
   })
   async delete(@Param('id') id: string) {
-    return this.templateService.deleteById(id);
+    return this.templateService.delete(id);
   }
 }

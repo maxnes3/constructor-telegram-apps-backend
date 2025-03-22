@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Delete } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { CategoryCreateRequestDto } from './dto';
@@ -34,5 +34,21 @@ export class CategoryController {
   })
   async create(@Body() dto: CategoryCreateRequestDto) {
     return this.categoryService.create(dto);
+  }
+
+  @Delete('delete/:id')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Delete a category' })
+  @ApiBody({ type: String })
+  @ApiResponse({
+    status: 200,
+    description: 'The category has been successfully deleted.'
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request. Invalid input data.'
+  })
+  async delete(id: string) {
+    return this.categoryService.delete(id);
   }
 }
