@@ -11,12 +11,14 @@ export class BuildService {
   async create(dto: BuildCreateDto) {
     const { props, ...data } = dto;
 
-    const compiledData = BuildUtils.compileClassesToSCSS(data);
+    const { compiledJSX: jsx, compiledSCSS: scss } =
+      BuildUtils.compileClassesToSCSS(data);
 
     return this.prismaService.builds.create({
       data: {
-        ...compiledData,
-        props: props as Prisma.InputJsonValue
+        jsx,
+        scss,
+        props: JSON.stringify(props) as Prisma.InputJsonValue
       }
     });
   }
@@ -24,15 +26,17 @@ export class BuildService {
   async update(id: string, dto: BuildUpdateDto) {
     const { props, ...data } = dto;
 
-    const compiledData = BuildUtils.compileClassesToSCSS(data);
+    const { compiledJSX: jsx, compiledSCSS: scss } =
+      BuildUtils.compileClassesToSCSS(data);
 
     return this.prismaService.builds.update({
       where: {
         id
       },
       data: {
-        ...compiledData,
-        props: props as Prisma.InputJsonValue
+        jsx,
+        scss,
+        props: JSON.stringify(props) as Prisma.InputJsonValue
       }
     });
   }
