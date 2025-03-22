@@ -12,7 +12,7 @@ export class BuildService {
     const { props, ...data } = dto;
 
     const { compiledJSX: jsx, compiledSCSS: scss } =
-      BuildUtils.compileClassesToSCSS(data);
+      BuildUtils.compileUniqueClasses(data);
 
     return this.prismaService.builds.create({
       data: {
@@ -27,7 +27,7 @@ export class BuildService {
     const { props, ...data } = dto;
 
     const { compiledJSX: jsx, compiledSCSS: scss } =
-      BuildUtils.compileClassesToSCSS(data);
+      BuildUtils.compileUniqueClasses(data);
 
     return this.prismaService.builds.update({
       where: {

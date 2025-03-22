@@ -1,9 +1,9 @@
 import { BuildUpdateDto } from '@/build';
 
-type compileClassesToSCSSType = Omit<BuildUpdateDto, 'props'>;
+type compileUniqueClassesType = Omit<BuildUpdateDto, 'props'>;
 
 export const BuildUtils = {
-  compileClassesToSCSS: (data: compileClassesToSCSSType) => {
+  compileUniqueClasses: (data: compileUniqueClassesType) => {
     const { jsx, scss } = data;
 
     if (!scss) return { compiledJSX: jsx, compiledSCSS: scss };
