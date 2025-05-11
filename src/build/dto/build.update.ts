@@ -3,6 +3,14 @@ import { IsObject, IsOptional, IsString } from 'class-validator';
 
 export class BuildUpdateDto {
   @ApiProperty({
+    description: 'The ID of the build.',
+    example: 'build-uuid',
+    required: true
+  })
+  @IsString()
+  id: string;
+
+  @ApiProperty({
     description: 'The JSX content of the build.',
     example: '<div>Hello, World!</div>',
     required: false

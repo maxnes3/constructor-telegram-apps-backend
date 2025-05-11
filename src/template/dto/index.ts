@@ -1,1 +1,2 @@
-export { TemplateCreateRequestDto } from './template.request';
+export { TemplateCreateDto } from './template.create';
+export { TemplateUpdateDto } from './template.update';

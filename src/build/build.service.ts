@@ -1,8 +1,8 @@
 import { PrismaService } from '@/prisma.service';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { BuildCreateDto, BuildUpdateDto } from './dto';
-import { BuildUtils } from './utils';
+import { BuildHelper } from './helpers';
 
 @Injectable()
 export class BuildService {
@@ -20,7 +20,7 @@ export class BuildService {
     const { props, ...data } = dto;
 
     const { compiledJSX: jsx, compiledSCSS: scss } =
-      BuildUtils.compileUniqueClasses(data);
+      BuildHelper.compileUniqueClasses(data);
 
     return this.prismaService.builds.create({
       data: {
@@ -31,21 +31,24 @@ export class BuildService {
     });
   }
 
-  async update(id: string, dto: BuildUpdateDto) {
-    const { props, ...data } = dto;
+  async update(dto: BuildUpdateDto) {
+    const { id, props, jsx, scss } = dto;
 
-    const { compiledJSX: jsx, compiledSCSS: scss } =
-      BuildUtils.compileUniqueClasses(data);
+    const updatedBuild = await this.getById(id);
+
+    if (!updatedBuild) {
+      throw new BadRequestException('Invalid id value');
+    }
+
+    updatedBuild.jsx = jsx || updatedBuild.jsx;
+    updatedBuild.scss = scss || updatedBuild.scss;
+    updatedBuild.props = props ? JSON.stringify(props) : updatedBuild.props;
 
     return this.prismaService.builds.update({
       where: {
         id
       },
-      data: {
-        jsx,
-        scss,
-        props: JSON.stringify(props) as Prisma.InputJsonValue
-      }
+      data: updatedBuild
     });
   }
 

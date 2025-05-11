@@ -1,6 +1,6 @@
 import { PrismaService } from '@/prisma.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CategoryCreateRequestDto } from './dto';
+import { CategoryCreateDto, CategoryUpdateDto } from './dto';
 
 @Injectable()
 export class CategoryService {
@@ -21,11 +21,30 @@ export class CategoryService {
     }
   }
 
-  async create(data: CategoryCreateRequestDto) {
+  async create(data: CategoryCreateDto) {
     const newCategory = await this.prismaService.categories.create({
       data
     });
     return newCategory;
+  }
+
+  async update(dto: CategoryUpdateDto) {
+    const { id, name } = dto;
+
+    const updatedCategory = await this.getById(id);
+
+    if (!updatedCategory) {
+      throw new BadRequestException('Invalid id value');
+    }
+
+    updatedCategory.name = name || updatedCategory.name;
+
+    return this.prismaService.categories.update({
+      where: {
+        id
+      },
+      data: updatedCategory
+    });
   }
 
   async delete(id: string) {

@@ -1,6 +1,6 @@
 import { PrismaService } from '@/prisma.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { TemplateCreateRequestDto } from './dto';
+import { TemplateCreateDto, TemplateUpdateDto } from './dto';
 import { BuildService } from '@/build';
 
 @Injectable()
@@ -33,12 +33,13 @@ export class TemplateService {
         id: { in: ids }
       },
       include: {
-        prototype: true
+        prototype: true,
+        demo: true
       }
     });
   }
 
-  async create(dto: TemplateCreateRequestDto) {
+  async create(dto: TemplateCreateDto) {
     const { demo, prototype, categoryId, ...rest } = dto;
 
     const createdDemo = await this.buildService.create(demo);
@@ -68,6 +69,41 @@ export class TemplateService {
     });
 
     return newTemplate;
+  }
+
+  async update(dto: TemplateUpdateDto) {
+    const { id, demo, prototype, categoryId, ...rest } = dto;
+
+    const updatedDemo = demo ? await this.buildService.create(demo) : null;
+    const updatedPrototype = prototype
+      ? await this.buildService.create(prototype)
+      : null;
+
+    if (!updatedDemo || !updatedPrototype) {
+      throw new BadRequestException('Invalid data in demo or prototype');
+    }
+
+    return this.prismaService.templates.update({
+      where: {
+        id
+      },
+      data: {
+        ...rest,
+        category: {
+          connect: { id: categoryId }
+        },
+        demo: {
+          connect: { id: updatedDemo.id }
+        },
+        prototype: {
+          connect: { id: updatedPrototype.id }
+        }
+      },
+      include: {
+        demo: true,
+        prototype: true
+      }
+    });
   }
 
   async delete(id: string) {

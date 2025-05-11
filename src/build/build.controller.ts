@@ -10,7 +10,13 @@ import {
 } from '@nestjs/common';
 import { BuildService } from './build.service';
 import { BuildCreateDto, BuildUpdateDto } from './dto';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags
+} from '@nestjs/swagger';
 
 @ApiTags('Build')
 @Controller('build')
@@ -20,7 +26,7 @@ export class BuildController {
   @Get('get/:id')
   @HttpCode(200)
   @ApiOperation({ summary: 'Get build data by ID' })
-  @ApiBody({ type: String })
+  @ApiParam({ name: 'id', type: String, description: 'Id of build' })
   @ApiResponse({
     status: 200,
     description: 'Returns the build data.'
@@ -39,7 +45,7 @@ export class BuildController {
 
   @Post('create')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Create build data' })
+  @ApiOperation({ summary: 'Create a new build data' })
   @ApiBody({ type: BuildCreateDto })
   @ApiResponse({
     status: 200,
@@ -57,9 +63,9 @@ export class BuildController {
     return this.buildService.create(dto);
   }
 
-  @Put('update/:id')
+  @Put('update')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Update build data' })
+  @ApiOperation({ summary: 'Update build data by ID' })
   @ApiBody({ type: BuildUpdateDto })
   @ApiResponse({
     status: 200,
@@ -73,14 +79,14 @@ export class BuildController {
     status: 500,
     description: 'Internal server error. Failed to update the build.'
   })
-  async update(@Param('id') id: string, @Body() dto: BuildUpdateDto) {
-    return this.buildService.update(id, dto);
+  async update(@Body() dto: BuildUpdateDto) {
+    return this.buildService.update(dto);
   }
 
   @Delete('delete/:id')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Delete build data' })
-  @ApiBody({ type: String })
+  @ApiOperation({ summary: 'Delete build data by ID' })
+  @ApiParam({ name: 'id', type: String, description: 'Id of build' })
   @ApiResponse({
     status: 200,
     description: 'The build has been successfully deleted.'
@@ -93,7 +99,7 @@ export class BuildController {
     status: 500,
     description: 'Internal server error. Failed to delete the build.'
   })
-  async delete(id: string) {
+  async delete(@Param('id') id: string) {
     return this.buildService.delete(id);
   }
 }

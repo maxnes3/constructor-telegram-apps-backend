@@ -1,9 +1,9 @@
 import { BuildUpdateDto } from '@/build';
 
-type compileUniqueClassesType = Omit<BuildUpdateDto, 'props'>;
+type compileUniqueClassesType = Omit<BuildUpdateDto, 'id' | 'props'>;
 
-export const BuildUtils = {
-  compileUniqueClasses: (data: compileUniqueClassesType) => {
+export class BuildHelper {
+  public static compileUniqueClasses(data: compileUniqueClassesType) {
     const { jsx, scss } = data;
 
     if (!scss) return { compiledJSX: jsx, compiledSCSS: scss };
@@ -28,4 +28,4 @@ export const BuildUtils = {
 
     return { compiledJSX, compiledSCSS };
   }
-};
+}
