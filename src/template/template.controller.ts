@@ -17,11 +17,19 @@ import {
   ApiBody,
   ApiParam
 } from '@nestjs/swagger';
+import { LoggerService } from '@/logger';
 
 @ApiTags('Template')
 @Controller('template')
 export class TemplateController {
-  constructor(private readonly templateService: TemplateService) {}
+  private readonly routePrefix: string;
+  constructor(
+    private readonly templateService: TemplateService,
+    private readonly logger: LoggerService
+  ) {
+    this.logger.setContext(TemplateController.name);
+    this.routePrefix = 'api/template';
+  }
 
   @Get('get')
   @HttpCode(200)
@@ -35,6 +43,7 @@ export class TemplateController {
     description: 'Internal server error. Failed to fetch templates.'
   })
   async getAll() {
+    this.logger.log(`Execute handle: ${this.routePrefix}/get`);
     return this.templateService.getAll();
   }
 
@@ -55,6 +64,7 @@ export class TemplateController {
     description: 'Internal server error. Failed to fetch the template.'
   })
   async getById(@Param('id') id: string) {
+    this.logger.log(`Execute handle: ${this.routePrefix}/get/${id}`);
     return this.templateService.getById(id);
   }
 
@@ -75,6 +85,7 @@ export class TemplateController {
     description: 'Internal server error. Failed to create the template.'
   })
   async create(@Body() dto: TemplateCreateDto) {
+    this.logger.log(`Execute handle: ${this.routePrefix}/create`);
     return this.templateService.create(dto);
   }
 
@@ -95,6 +106,7 @@ export class TemplateController {
     description: 'Internal server error. Failed to update the template.'
   })
   async update(@Body() dto: TemplateUpdateDto) {
+    this.logger.log(`Execute handle: ${this.routePrefix}/update`);
     return this.templateService.update(dto);
   }
 
@@ -115,6 +127,7 @@ export class TemplateController {
     description: 'Internal server error. Failed to delete the template.'
   })
   async delete(@Param('id') id: string) {
+    this.logger.log(`Execute handle: ${this.routePrefix}/delete/${id}`);
     return this.templateService.delete(id);
   }
 }

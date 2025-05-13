@@ -11,11 +11,19 @@ import { ProjectService } from './project.service';
 import { ProjectRequestDto } from './dto';
 import { Response } from 'express';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { LoggerService } from '@logger/index';
 
 @ApiTags('Project')
 @Controller('project')
 export class ProjectController {
-  constructor(private readonly projectService: ProjectService) {}
+  private readonly routePrefix: string;
+  constructor(
+    private readonly projectService: ProjectService,
+    private logger: LoggerService
+  ) {
+    this.logger.setContext(ProjectController.name);
+    this.routePrefix = 'api/project';
+  }
 
   @Get('getprojectconfig/:os')
   @HttpCode(200)
@@ -33,6 +41,9 @@ export class ProjectController {
     description: 'Internal server error. Failed to create the project zip file.'
   })
   async getProjectConfig(@Param('os') os: string, @Res() res: Response) {
+    this.logger.log(
+      `Execute handle: ${this.routePrefix}/getprojectconfig/${os}`
+    );
     await this.projectService.getProjectConfig(os, res);
   }
 
@@ -53,6 +64,7 @@ export class ProjectController {
     description: 'Internal server error. Failed to create the project zip file.'
   })
   async createProjectZip(@Body() dto: ProjectRequestDto, @Res() res: Response) {
+    this.logger.log(`Execute handle: ${this.routePrefix}/download`);
     await this.projectService.downloadProjectZip(dto, res);
   }
 
@@ -73,6 +85,7 @@ export class ProjectController {
     description: 'Internal server error. Failed to save the project.'
   })
   async saveProject(@Body() dto: ProjectRequestDto) {
+    this.logger.log(`Execute handle: ${this.routePrefix}/save`);
     return this.projectService.saveProject(dto);
   }
 }

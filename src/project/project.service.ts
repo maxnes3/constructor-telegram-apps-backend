@@ -13,14 +13,18 @@ import { ConfigService } from '@/config/config.service';
 import { ScreenService } from '@/screen/screen.service';
 import { ScreenCreateDto } from '@/screen/dto';
 import { JSReactComponentExport } from './types';
+import { LoggerService } from '@logger/index';
 
 @Injectable()
 export class ProjectService {
   constructor(
-    private screenService: ScreenService,
-    private templateService: TemplateService,
-    private configService: ConfigService
-  ) {}
+    private readonly screenService: ScreenService,
+    private readonly templateService: TemplateService,
+    private readonly configService: ConfigService,
+    private readonly logger: LoggerService
+  ) {
+    this.logger.setContext(ProjectService.name);
+  }
 
   // TODO: Implement this method
   async saveProject(data: ProjectRequestDto) {
@@ -29,14 +33,17 @@ export class ProjectService {
 
   async getProjectConfig(os: string, res: Response) {
     const ProjectName = `project-configs-${os}`;
+    this.logger.debug(`Start build config project: ${ProjectName}`);
 
     const rootProjectPath = await FileSystemHelper.createDirectory(
       `./${ConfigHelper.getWorkDirectory()}/${ProjectName}`
     );
+    this.logger.debug(`Create root project path: ${rootProjectPath}`);
 
     const sourcePath = await FileSystemHelper.createDirectory(
       `${rootProjectPath}/src`
     );
+    this.logger.debug(`Create src project path: ${sourcePath}`);
 
     await this.generateConfigRootFiles({
       rootPath: rootProjectPath,
@@ -118,7 +125,12 @@ export class ProjectService {
     sourcePath: string;
     browserOS?: string;
   }) {
+    this.logger.debug(`Pull config files by os: ${browserOS}`);
     const configsFiles = await this.configService.getForOS(browserOS);
+
+    this.logger.debug(
+      `Create config files: [${configsFiles.map((config) => config.name).join(', ')}]`
+    );
     await Promise.all(
       configsFiles.map((config) => {
         const path = config.isSource ? sourcePath : rootPath;
@@ -251,15 +263,28 @@ export class ProjectService {
       'npm run build'
     ];
     for (const command of buildCommands) {
+      this.logger.debug(`Execute command: ${command}`);
       await TerminalHelper.executeCommand({
         command,
         path
       });
     }
 
-    await FileSystemHelper.removeDirectory(`${path}/node_modules`);
-    await FileSystemHelper.removeDirectory(`${path}/dist`);
-    await FileSystemHelper.removeFile(`${path}/package-lock.json`);
+    const nodeModulesPath = `${path}/node_modules`;
+    this.logger.debug(
+      `Remove node_modules directory by path: ${nodeModulesPath}`
+    );
+    await FileSystemHelper.removeDirectory(nodeModulesPath);
+
+    const distPath = `${path}/dist`;
+    this.logger.debug(`Remove dist directory by path: ${distPath}`);
+    await FileSystemHelper.removeDirectory(distPath);
+
+    const packageLockPath = `${path}/package-lock.json`;
+    this.logger.debug(
+      `Remove package-lock.json file by path: ${packageLockPath}`
+    );
+    await FileSystemHelper.removeFile(packageLockPath);
   }
 
   private async sendBackProjectZip({
@@ -271,14 +296,20 @@ export class ProjectService {
     path: string;
     res: Response;
   }) {
+    this.logger.debug(`Create project archive by path: ${path}`);
     const zipFilePath = await ArchivatorHelper.archivateByPath(path);
+
     res.download(zipFilePath, `${projectName}.zip`, async (error) => {
       try {
         if (error) {
+          this.logger.error(`Error sending file: ${error}`);
           throw new Error(`Error sending file: ${error}`);
         }
       } finally {
+        this.logger.debug(`Delete project directory at path: ${path}`);
         await FileSystemHelper.removeDirectory(path);
+
+        this.logger.debug(`Delete project zip archive at path: ${zipFilePath}`);
         await FileSystemHelper.removeDirectory(zipFilePath);
       }
     });

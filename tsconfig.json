@@ -22,7 +22,10 @@
       "@build/*": ["./src/build/*"],
       "@category/*": ["./src/category/*"],
       "@project/*": ["./src/project/*"],
-      "@template/*": ["./src/template/*"]
+      "@template/*": ["./src/template/*"],
+      "@config/*": ["./src/config/*"],
+      "@screen/*": ["./src/screen/*"],
+      "@logger/*": ["./src/logger/*"],
     }
   }
 }

@@ -5,9 +5,10 @@ import { PrismaService } from '@/prisma.service';
 import { TemplateModule } from '@template/template.module';
 import { ConfigModule } from '@/config/config.module';
 import { ScreenModule } from '@/screen/screen.module';
+import { LoggerModule } from '@/logger/index';
 
 @Module({
-  imports: [ScreenModule, TemplateModule, ConfigModule],
+  imports: [ScreenModule, TemplateModule, ConfigModule, LoggerModule],
   controllers: [ProjectController],
   providers: [ProjectService, PrismaService]
 })

@@ -17,11 +17,19 @@ import {
   ApiParam
 } from '@nestjs/swagger';
 import { CategoryCreateDto, CategoryUpdateDto } from './dto';
+import { LoggerService } from '@logger/index';
 
 @ApiTags('Category')
 @Controller('category')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) {}
+  private readonly routePrefix: string;
+  constructor(
+    private readonly categoryService: CategoryService,
+    private readonly logger: LoggerService
+  ) {
+    this.logger.setContext(CategoryController.name);
+    this.routePrefix = 'api/category';
+  }
 
   @Get('get')
   @HttpCode(200)
@@ -31,6 +39,7 @@ export class CategoryController {
     description: 'Returns a list of all categories.'
   })
   async getAll() {
+    this.logger.log(`Execute handle: ${this.routePrefix}/get`);
     return this.categoryService.getAll();
   }
 
@@ -47,6 +56,7 @@ export class CategoryController {
     description: 'Bad request. Invalid input data.'
   })
   async getById(@Param('id') id: string) {
+    this.logger.log(`Execute handle: ${this.routePrefix}/get/${id}`);
     return this.categoryService.getById(id);
   }
 
@@ -64,6 +74,7 @@ export class CategoryController {
     description: 'Bad request. Invalid input data.'
   })
   async create(@Body() dto: CategoryCreateDto) {
+    this.logger.log(`Execute handle: ${this.routePrefix}/create`);
     return this.categoryService.create(dto);
   }
 
@@ -84,6 +95,7 @@ export class CategoryController {
     description: 'Internal server error. Failed to update the category.'
   })
   async update(@Body() dto: CategoryUpdateDto) {
+    this.logger.log(`Execute handle: ${this.routePrefix}/update`);
     return this.categoryService.update(dto);
   }
 
@@ -104,6 +116,7 @@ export class CategoryController {
     description: 'Internal server error. Failed to delete the category.'
   })
   async delete(@Param('id') id: string) {
+    this.logger.log(`Execute handle: ${this.routePrefix}/delete/${id}`);
     return this.categoryService.delete(id);
   }
 }

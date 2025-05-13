@@ -17,11 +17,19 @@ import {
   ApiResponse,
   ApiTags
 } from '@nestjs/swagger';
+import { LoggerService } from '@logger/index';
 
 @ApiTags('Build')
 @Controller('build')
 export class BuildController {
-  constructor(private readonly buildService: BuildService) {}
+  private readonly routePrefix: string;
+  constructor(
+    private readonly buildService: BuildService,
+    private readonly logger: LoggerService
+  ) {
+    this.logger.setContext(BuildController.name);
+    this.routePrefix = 'api/build';
+  }
 
   @Get('get/:id')
   @HttpCode(200)
@@ -40,6 +48,7 @@ export class BuildController {
     description: 'Internal server error. Failed to fetch the build.'
   })
   async getById(@Param('id') id: string) {
+    this.logger.log(`Execute handle: ${this.routePrefix}/get/${id}`);
     return this.buildService.getById(id);
   }
 
@@ -60,6 +69,7 @@ export class BuildController {
     description: 'Internal server error. Failed to create the build.'
   })
   async create(@Body() dto: BuildCreateDto) {
+    this.logger.log(`Execute handle: ${this.routePrefix}/create`);
     return this.buildService.create(dto);
   }
 
@@ -80,6 +90,7 @@ export class BuildController {
     description: 'Internal server error. Failed to update the build.'
   })
   async update(@Body() dto: BuildUpdateDto) {
+    this.logger.log(`Execute handle: ${this.routePrefix}/update`);
     return this.buildService.update(dto);
   }
 
@@ -100,6 +111,7 @@ export class BuildController {
     description: 'Internal server error. Failed to delete the build.'
   })
   async delete(@Param('id') id: string) {
+    this.logger.log(`Execute handle: ${this.routePrefix}/delete/${id}`);
     return this.buildService.delete(id);
   }
 }
