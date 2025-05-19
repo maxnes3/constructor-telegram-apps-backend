@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  novatoolkit-db:
+    image: postgres:latest
+    container_name: novatoolkit-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: novatoolkit-db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./dump/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  novatoolkit-backend:
+    container_name: novatoolkit-backend
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4200:4200"
+    environment:
+      - NESTJS_DATABASE_URL=postgresql://postgres:postgres@novatoolkit-db:5432/novatoolkit-db?schema=public
+      - NESTJS_FRONT_URL=http://localhost:5173
+      - NESTJS_SERVER_PORT=4200
+    depends_on:
+      novatoolkit-db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:

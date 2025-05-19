@@ -150,12 +150,25 @@ export class ProjectService {
     templatesId: string[];
   }) {
     const rootComponentsDirectory = `${path}/components`;
+    this.logger.debug(
+      `Create component directory by path: ${rootComponentsDirectory}`
+    );
     await FileSystemHelper.createDirectory(rootComponentsDirectory);
 
-    const projectTemplates =
+    this.logger.debug(`Pull Templates at Screen by ids`);
+    const templatesByIds =
       await this.templateService.getTemplatesByIds(templatesId);
 
-    const projectGeneratedComponents = projectTemplates.map((template) =>
+    this.logger.debug(`Sorting templates by Position Behaviour`);
+    const sortedScreenTemplates = templatesByIds.sort((a, b) => {
+      const order = { isTop: 0, isFill: 1, isBottom: 2 };
+      return (
+        (order[a.positionBehaviour] ?? 99) - (order[b.positionBehaviour] ?? 99)
+      );
+    });
+
+    this.logger.debug(`Generating React Components`);
+    const screenGeneratedComponents = sortedScreenTemplates.map((template) =>
       ComponentHelper.generateReactComponet({
         name: template.name,
         jsx: template.prototype.jsx,
@@ -164,17 +177,19 @@ export class ProjectService {
       })
     );
 
-    for (const component of projectGeneratedComponents) {
+    this.logger.debug('Writing Components into Directory');
+    for (const component of screenGeneratedComponents) {
       const { formatedName, ...files } = component;
 
-      const componentDirectory = `${rootComponentsDirectory}/${formatedName}`;
-      await FileSystemHelper.createDirectory(componentDirectory);
+      const componentDirectory = await FileSystemHelper.createDirectory(
+        `${rootComponentsDirectory}/${formatedName}`
+      );
 
       await this.writeReactComponentFiles({ path: componentDirectory, files });
     }
 
     const barrelExports = ComponentHelper.generateExports(
-      projectGeneratedComponents.map((component) => ({
+      screenGeneratedComponents.map((component) => ({
         name: component.formatedName,
         path: `./${component.formatedName}`
       }))
@@ -184,9 +199,7 @@ export class ProjectService {
       fileContent: barrelExports
     });
 
-    return projectGeneratedComponents.map(
-      (component) => component.formatedName
-    );
+    return screenGeneratedComponents.map((component) => component.formatedName);
   }
 
   private async generateScreensSlice({
