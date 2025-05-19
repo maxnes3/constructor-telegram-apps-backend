@@ -3,9 +3,9 @@
 
 Run project:
 ```
-npm run start
+docker compose up
 ```
-or
+OR
 ```
-yarn start
+npm run start:docker
 ```
