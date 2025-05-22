@@ -1,9 +1,8 @@
-import { PrismaService } from '@/prisma.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { BuildCreateDto, BuildUpdateDto } from './dto';
-import { BuildHelper } from './helpers';
-import { LoggerService } from '@logger/index';
+import { BuildCreateDto } from './dto/build.create';
+import { BuildUpdateDto } from './dto/build.update';
+import { PrismaService } from '@/prisma.service';
+import { LoggerService } from '@/logger';
 
 @Injectable()
 export class BuildService {
@@ -14,36 +13,50 @@ export class BuildService {
     this.logger.setContext(BuildService.name);
   }
 
+  async getAll() {
+    this.logger.debug('Pull all build files from database');
+    return this.prismaService.builds.findMany();
+  }
+
   async getById(id: string) {
-    this.logger.debug(`Pull build from database by id: ${id}`);
-    return this.prismaService.builds.findUnique({
+    try {
+      this.logger.debug(`Pull build files from database by id: ${id}`);
+      const build = await this.prismaService.builds.findUnique({
+        where: { id }
+      });
+      return build;
+    } catch (error) {
+      this.logger.error(`Invalid id value: ${error}`);
+      throw new BadRequestException('Invalid id value', error);
+    }
+  }
+
+  async getForOS(currentOS: string) {
+    this.logger.debug(`Pull build files by os: ${currentOS}`);
+    return this.prismaService.builds.findMany({
       where: {
-        id
+        OR: [{ os: currentOS }, { os: 'all' }]
       }
     });
   }
 
-  async create(dto: BuildCreateDto) {
-    const { props, ...data } = dto;
-
-    this.logger.debug(`Compiling unique classes by data`);
-    const { compiledJSX: jsx, compiledSCSS: scss } =
-      BuildHelper.compileUniqueClasses(data);
-
-    this.logger.debug(`Insert build into database`);
-    return this.prismaService.builds.create({
-      data: {
-        jsx,
-        scss,
-        props: JSON.stringify(props) as Prisma.InputJsonValue
-      }
-    });
+  async create(data: BuildCreateDto) {
+    try {
+      this.logger.debug(`Insert build file into database`);
+      const newBuild = await this.prismaService.builds.create({
+        data
+      });
+      return newBuild;
+    } catch (error) {
+      this.logger.error(`Invalid data: ${error}`);
+      throw new BadRequestException('Invalid data', error);
+    }
   }
 
   async update(dto: BuildUpdateDto) {
-    const { id, props, jsx, scss } = dto;
+    const { id, name, isSource, code } = dto;
 
-    this.logger.debug(`Pull build from database by id: ${id}`);
+    this.logger.debug(`Pull build file from database by id: ${id}`);
     const updatedBuild = await this.getById(id);
 
     if (!updatedBuild) {
@@ -51,12 +64,12 @@ export class BuildService {
       throw new BadRequestException('Invalid id value');
     }
 
-    this.logger.debug('Check build changes');
-    updatedBuild.jsx = jsx || updatedBuild.jsx;
-    updatedBuild.scss = scss || updatedBuild.scss;
-    updatedBuild.props = props ? JSON.stringify(props) : updatedBuild.props;
+    this.logger.debug('Check build file changes');
+    updatedBuild.name = name || updatedBuild.name;
+    updatedBuild.code = code || updatedBuild.code;
+    updatedBuild.isSource = isSource || updatedBuild.isSource;
 
-    this.logger.debug(`Update build data at database by id: ${id}`);
+    this.logger.debug(`Update build file data at database by id: ${id}`);
     return this.prismaService.builds.update({
       where: {
         id
@@ -66,7 +79,7 @@ export class BuildService {
   }
 
   async delete(id: string) {
-    this.logger.debug(`Delete build from database by id: ${id}`);
+    this.logger.debug(`Delete build file from database by id: ${id}`);
     return this.prismaService.builds.delete({
       where: {
         id

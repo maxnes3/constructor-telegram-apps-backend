@@ -27,12 +27,12 @@ export class ProjectRequestDto {
       {
         name: 'Home Screen',
         isStartScreen: true,
-        templates: ['template-uuid-1', 'template-uuid-2']
+        templatesIds: ['template-uuid-1', 'template-uuid-2']
       },
       {
         name: 'Settings Screen',
         isStartScreen: false,
-        templates: ['template-uuid-3']
+        templatesIds: ['template-uuid-3']
       }
     ]
   })

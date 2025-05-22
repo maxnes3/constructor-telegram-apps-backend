@@ -11,61 +11,81 @@ model Templates {
   id                String     @id @default(uuid())
   name              String     @unique
   categoryId        String     @map("category_id")
-  demoId            String     @map("demo_id")
-  prototypeId       String     @map("prototype_id")
+  developId         String     @map("develop_id")
+  runningId         String     @map("running_id")
   positionBehaviour String?    @map("position_behaviour")
-  category          Categories @relation(fields: [categoryId], references: [id])
-  demo              Builds     @relation(name: "DemoRelation", fields: [demoId], references: [id])
-  prototype         Builds     @relation(name: "PrototypeRelation", fields: [prototypeId], references: [id])
+
+  category          Categories @relation("TemplateToCategory", fields: [categoryId], references: [id])
+  develop           Codebases  @relation("TemplateToDevelopCodebase", fields: [developId], references: [id])
+  running           Codebases  @relation("TemplateToRunningCodebase", fields: [runningId], references: [id])
   screens           Screens[]  @relation("TemplatesToScreens")
 
+  @@index([categoryId])
+  @@index([developId])
+  @@index([runningId])
   @@map("templates")
 }
 
 model Categories {
   id        String      @id @default(uuid())
   name      String
-  templates Templates[]
+
+  templates Templates[] @relation("TemplateToCategory")
 
   @@map("categories")
 }
 
+model Codebases {
+  id               String      @id @default(uuid())
+  jsx              String
+  scss             String?
+  props            Json?
+
+  developTemplates Templates[] @relation("TemplateToDevelopCodebase")
+  runningTemplates Templates[] @relation("TemplateToRunningCodebase")
+
+  @@map("codebases")
+}
+
 model Builds {
-  id                 String      @id @default(uuid())
-  jsx                String
-  scss               String?
-  props              Json?
-  demoTemplates      Templates[] @relation(name: "DemoRelation")
-  prototypeTemplates Templates[] @relation(name: "PrototypeRelation")
+  id       String  @id @default(uuid())
+  name     String  @unique
+  code     String
+  os       String  @default("all")
+  isSource Boolean @map("is_root")
 
   @@map("builds")
 }
 
-model Configs {
-  id         String    @id @default(uuid())
-  name       String    @unique
-  code       String
-  os         String    @default("all")
-  isSource   Boolean   @map("is_root")
-
-  @@map("configs")
-}
-
 model Screens {
-  id            String       @id @default(uuid())
+  id            String      @id @default(uuid())
   name          String
-  isStartScreen Boolean      @map("is_start_screen")
-  projectId     String       @map("project_id")
-  project       Projects     @relation(name: "ProjectRelation", fields: [projectId], references: [id])
-  templates     Templates[]  @relation("TemplatesToScreens")
+  isStartScreen Boolean     @map("is_start_screen")
+  projectId     String      @map("project_id")
+
+  project       Projects    @relation("ProjectRelation", fields: [projectId], references: [id])
+  templates     Templates[] @relation("TemplatesToScreens")
 
   @@map("screens")
 }
 
 model Projects {
-  id       String     @id @default(uuid())
-  name     String
-  screens  Screens[]  @relation(name: "ProjectRelation")
+  id      String    @id @default(uuid())
+  name    String
+  ownerId String    @map("owner_id")
+
+  User    Users     @relation("UserRelation", fields: [ownerId], references: [id])
+  screens Screens[] @relation("ProjectRelation")
 
   @@map("projects")
+}
+
+model Users {
+  id       String     @id @default(uuid())
+  email    String     @unique
+  password String
+
+  projects Projects[] @relation("UserRelation")
+
+  @@map("users")
 }

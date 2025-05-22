@@ -1,30 +1,36 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsObject, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsString } from 'class-validator';
 
 export class BuildCreateDto {
   @ApiProperty({
-    description: 'The JSX content of the build.',
-    example: '<div>Hello, World!</div>',
+    description: 'The name with extension of the build file.',
+    example: 'build.js',
     required: true
   })
   @IsString()
-  jsx: string;
+  name: string;
 
   @ApiProperty({
-    description: 'The SCSS content of the build.',
-    example: 'body { background: red; }',
-    required: false
+    description: 'The code content of the build file.',
+    example: 'export const Build = { module: {} }',
+    required: true
   })
   @IsString()
-  @IsOptional()
-  scss?: string;
+  code: string;
 
   @ApiProperty({
-    description: 'Props for the JSX component.',
-    example: { color: 'red', size: 'large' },
-    required: false
+    description: 'Which operating system is the build file for.',
+    example: 'windows',
+    required: true
   })
-  @IsObject()
-  @IsOptional()
-  props?: Record<string, unknown>;
+  @IsString()
+  os: string;
+
+  @ApiProperty({
+    description: 'Build file in src or root directory.',
+    example: false,
+    required: true
+  })
+  @IsBoolean()
+  isSource: boolean;
 }

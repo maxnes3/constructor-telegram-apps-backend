@@ -25,9 +25,9 @@ export class ProjectController {
     this.routePrefix = 'api/project';
   }
 
-  @Get('getprojectconfig/:os')
+  @Get('getprojectbuild/:os')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Get Project with all based config files' })
+  @ApiOperation({ summary: 'Get Project with all based build files' })
   @ApiResponse({
     status: 200,
     description: 'The project zip file has been successfully created.'
@@ -40,11 +40,11 @@ export class ProjectController {
     status: 500,
     description: 'Internal server error. Failed to create the project zip file.'
   })
-  async getProjectConfig(@Param('os') os: string, @Res() res: Response) {
+  async getProjectBuild(@Param('os') os: string, @Res() res: Response) {
     this.logger.log(
-      `Execute handle: ${this.routePrefix}/getprojectconfig/${os}`
+      `Execute handle: ${this.routePrefix}/getprojectbuild/${os}`
     );
-    await this.projectService.getProjectConfig(os, res);
+    await this.projectService.getProjectBuild(os, res);
   }
 
   @Post('download')

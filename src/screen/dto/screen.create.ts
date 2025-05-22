@@ -17,7 +17,7 @@ export class ScreenCreateDto {
   })
   @IsOptional()
   @IsString()
-  projectId: string;
+  projectId?: string;
 
   @ApiProperty({
     description: 'The screen is a start screen?',

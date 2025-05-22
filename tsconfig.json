@@ -23,7 +23,7 @@
       "@category/*": ["./src/category/*"],
       "@project/*": ["./src/project/*"],
       "@template/*": ["./src/template/*"],
-      "@config/*": ["./src/config/*"],
+      "@codebase/*": ["src/codebase/*"],
       "@screen/*": ["./src/screen/*"],
       "@logger/*": ["./src/logger/*"],
     }

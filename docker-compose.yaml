@@ -36,6 +36,8 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+    command: npm run start:dev
+    restart: unless-stopped
 
 volumes:
   postgres_data:

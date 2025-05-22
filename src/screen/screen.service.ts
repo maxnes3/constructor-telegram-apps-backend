@@ -44,8 +44,15 @@ export class ScreenService {
   async create(data: ScreenCreateDto) {
     try {
       this.logger.debug(`Insert screen into database`);
+      if (!data.projectId) {
+        throw new BadRequestException('Invalid data', 'projectId');
+      }
       const newScreen = await this.prismaService.screens.create({
-        data
+        data: {
+          name: data.name,
+          isStartScreen: data.isStartScreen,
+          project: { connect: { id: data.projectId } }
+        }
       });
       return newScreen;
     } catch (error) {

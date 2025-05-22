@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { BuildCreateDto } from '@build/index';
+import { CodebaseCreateDto } from '@codebase/index';
 import { IsObject, IsString } from 'class-validator';
 
 export class TemplateCreateDto {
@@ -28,18 +28,18 @@ export class TemplateCreateDto {
   positionBehaviour: string;
 
   @ApiProperty({
-    description: 'The demo build data.',
-    type: BuildCreateDto,
+    description: 'The develop build data.',
+    type: CodebaseCreateDto,
     required: true
   })
   @IsObject()
-  demo: BuildCreateDto;
+  develop: CodebaseCreateDto;
 
   @ApiProperty({
-    description: 'The prototype build data.',
-    type: BuildCreateDto,
+    description: 'The running build data.',
+    type: CodebaseCreateDto,
     required: true
   })
   @IsObject()
-  prototype: BuildCreateDto;
+  running: CodebaseCreateDto;
 }

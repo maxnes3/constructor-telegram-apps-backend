@@ -1,32 +1,34 @@
 import { PrismaService } from '@/prisma.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { TemplateCreateDto, TemplateUpdateDto } from './dto';
-import { BuildService } from '@build/index';
+import { CodebaseService } from '@codebase/index';
 import { LoggerService } from '@/logger';
 
 @Injectable()
 export class TemplateService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly buildService: BuildService,
+    private readonly codebaseService: CodebaseService,
     private readonly logger: LoggerService
   ) {
     this.logger.setContext(TemplateService.name);
   }
 
   async getAll() {
-    this.logger.debug('Pull all templates with builds from database');
+    this.logger.debug('Pull all templates with codebases from database');
     return this.prismaService.templates.findMany({
-      include: { demo: true, prototype: true }
+      include: { develop: true, running: true }
     });
   }
 
   async getById(id: string) {
     try {
-      this.logger.debug(`Pull template with builds from database by id: ${id}`);
+      this.logger.debug(
+        `Pull template with codebases from database by id: ${id}`
+      );
       const template = await this.prismaService.templates.findUnique({
         where: { id },
-        include: { demo: true, prototype: true }
+        include: { develop: true, running: true }
       });
       return template;
     } catch (error) {
@@ -37,30 +39,30 @@ export class TemplateService {
 
   async getTemplatesByIds(ids: string[]) {
     this.logger.debug(
-      `Pull templates with builds from database by many id: [${ids.join(', ')}]`
+      `Pull templates with codebases from database by many id: [${ids.join(', ')}]`
     );
     return this.prismaService.templates.findMany({
       where: {
         id: { in: ids }
       },
       include: {
-        prototype: true,
-        demo: true
+        running: true,
+        develop: true
       }
     });
   }
 
   async create(dto: TemplateCreateDto) {
     try {
-      const { demo, prototype, categoryId, ...rest } = dto;
+      const { develop, running, categoryId, ...rest } = dto;
 
-      this.logger.debug('Create demo and prototype builds');
-      const createdDemo = await this.buildService.create(demo);
-      const createdPrototype = await this.buildService.create(prototype);
+      this.logger.debug('Create develop and running codebases');
+      const createdDevelop = await this.codebaseService.create(develop);
+      const createdRunning = await this.codebaseService.create(running);
 
-      if (!createdDemo || !createdPrototype) {
-        this.logger.error('Invalid data in demo or prototype');
-        throw new BadRequestException('Invalid data in demo or prototype');
+      if (!createdDevelop || !createdRunning) {
+        this.logger.error('Invalid data in develop or running');
+        throw new BadRequestException('Invalid data in develop or running');
       }
 
       this.logger.debug(`Insert template into database`);
@@ -70,16 +72,16 @@ export class TemplateService {
           category: {
             connect: { id: categoryId }
           },
-          demo: {
-            connect: { id: createdDemo.id }
+          develop: {
+            connect: { id: createdDevelop.id }
           },
-          prototype: {
-            connect: { id: createdPrototype.id }
+          running: {
+            connect: { id: createdRunning.id }
           }
         },
         include: {
-          demo: true,
-          prototype: true
+          develop: true,
+          running: true
         }
       });
 
@@ -92,17 +94,19 @@ export class TemplateService {
 
   async update(dto: TemplateUpdateDto) {
     try {
-      const { id, demo, prototype, categoryId, ...rest } = dto;
+      const { id, develop, running, categoryId, ...rest } = dto;
 
-      this.logger.debug('Update demo and prototype builds');
-      const updatedDemo = demo ? await this.buildService.create(demo) : null;
-      const updatedPrototype = prototype
-        ? await this.buildService.create(prototype)
+      this.logger.debug('Update develop and running codebases');
+      const updatedDevelop = develop
+        ? await this.codebaseService.create(develop)
+        : null;
+      const updatedRunning = running
+        ? await this.codebaseService.create(running)
         : null;
 
-      if (!updatedDemo || !updatedPrototype) {
-        this.logger.error('Invalid data in demo or prototype');
-        throw new BadRequestException('Invalid data in demo or prototype');
+      if (!updatedDevelop || !updatedRunning) {
+        this.logger.error('Invalid data in develop or running');
+        throw new BadRequestException('Invalid data in develop or running');
       }
 
       this.logger.debug(`Update template data at database by id: ${id}`);
@@ -115,16 +119,16 @@ export class TemplateService {
           category: {
             connect: { id: categoryId }
           },
-          demo: {
-            connect: { id: updatedDemo.id }
+          develop: {
+            connect: { id: updatedDevelop.id }
           },
-          prototype: {
-            connect: { id: updatedPrototype.id }
+          running: {
+            connect: { id: updatedRunning.id }
           }
         },
         include: {
-          demo: true,
-          prototype: true
+          develop: true,
+          running: true
         }
       });
     } catch (error) {

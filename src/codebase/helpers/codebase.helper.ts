@@ -1,8 +1,8 @@
-import { BuildUpdateDto } from '@/build';
+import { CodebaseUpdateDto } from '@/codebase';
 
-type compileUniqueClassesType = Omit<BuildUpdateDto, 'id' | 'props'>;
+type compileUniqueClassesType = Omit<CodebaseUpdateDto, 'id' | 'props'>;
 
-export class BuildHelper {
+export class CodebaseHelper {
   public static compileUniqueClasses(data: compileUniqueClassesType) {
     const { jsx, scss } = data;
 

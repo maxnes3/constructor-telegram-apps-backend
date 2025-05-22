@@ -5,11 +5,11 @@ import { Response } from 'express';
 import {
   ArchivatorHelper,
   ComponentHelper,
-  ConfigHelper,
+  BuildHelper,
   FileSystemHelper,
   TerminalHelper
 } from './helpers';
-import { ConfigService } from '@/config/config.service';
+import { BuildService } from '@/build/build.service';
 import { ScreenService } from '@/screen/screen.service';
 import { ScreenCreateDto } from '@/screen/dto';
 import { JSReactComponentExport } from './types';
@@ -20,7 +20,7 @@ export class ProjectService {
   constructor(
     private readonly screenService: ScreenService,
     private readonly templateService: TemplateService,
-    private readonly configService: ConfigService,
+    private readonly buildService: BuildService,
     private readonly logger: LoggerService
   ) {
     this.logger.setContext(ProjectService.name);
@@ -31,12 +31,12 @@ export class ProjectService {
     return data;
   }
 
-  async getProjectConfig(os: string, res: Response) {
-    const ProjectName = `project-configs-${os}`;
-    this.logger.debug(`Start build config project: ${ProjectName}`);
+  async getProjectBuild(os: string, res: Response) {
+    const ProjectName = `project-builds-${os}`;
+    this.logger.debug(`Start build build project: ${ProjectName}`);
 
     const rootProjectPath = await FileSystemHelper.createDirectory(
-      `./${ConfigHelper.getWorkDirectory()}/${ProjectName}`
+      `./${BuildHelper.getWorkDirectory()}/${ProjectName}`
     );
     this.logger.debug(`Create root project path: ${rootProjectPath}`);
 
@@ -45,7 +45,7 @@ export class ProjectService {
     );
     this.logger.debug(`Create src project path: ${sourcePath}`);
 
-    await this.generateConfigRootFiles({
+    await this.generateBuildRootFiles({
       rootPath: rootProjectPath,
       sourcePath: sourcePath,
       browserOS: os
@@ -64,14 +64,14 @@ export class ProjectService {
     const formatedProjectName = name.trim().replace(' ', '');
 
     const rootProjectPath = await FileSystemHelper.createDirectory(
-      `./${ConfigHelper.getWorkDirectory()}/${formatedProjectName}`
+      `./${BuildHelper.getWorkDirectory()}/${formatedProjectName}`
     );
 
     const sourcePath = await FileSystemHelper.createDirectory(
       `${rootProjectPath}/src`
     );
 
-    await this.generateConfigRootFiles({
+    await this.generateBuildRootFiles({
       rootPath: rootProjectPath,
       sourcePath: sourcePath,
       browserOS: browserOS
@@ -116,7 +116,7 @@ export class ProjectService {
     );
   }
 
-  private async generateConfigRootFiles({
+  private async generateBuildRootFiles({
     rootPath,
     sourcePath,
     browserOS
@@ -125,18 +125,18 @@ export class ProjectService {
     sourcePath: string;
     browserOS?: string;
   }) {
-    this.logger.debug(`Pull config files by os: ${browserOS}`);
-    const configsFiles = await this.configService.getForOS(browserOS);
+    this.logger.debug(`Pull build files by os: ${browserOS}`);
+    const buildsFiles = await this.buildService.getForOS(browserOS);
 
     this.logger.debug(
-      `Create config files: [${configsFiles.map((config) => config.name).join(', ')}]`
+      `Create build files: [${buildsFiles.map((build) => build.name).join(', ')}]`
     );
     await Promise.all(
-      configsFiles.map((config) => {
-        const path = config.isSource ? sourcePath : rootPath;
+      buildsFiles.map((build) => {
+        const path = build.isSource ? sourcePath : rootPath;
         FileSystemHelper.writeFile({
-          filePath: `${path}/${config.name}`,
-          fileContent: config.code
+          filePath: `${path}/${build.name}`,
+          fileContent: build.code
         });
       })
     );
@@ -171,8 +171,8 @@ export class ProjectService {
     const screenGeneratedComponents = sortedScreenTemplates.map((template) =>
       ComponentHelper.generateReactComponet({
         name: template.name,
-        jsx: template.prototype.jsx,
-        scss: template.prototype.scss,
+        jsx: template.running.jsx,
+        scss: template.running.scss,
         createIndex: true
       })
     );
