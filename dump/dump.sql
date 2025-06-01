@@ -253,6 +253,7 @@ COPY public.templates (id, name, category_id, develop_id, running_id, position_b
 --
 
 COPY public.users (id, email, password) FROM stdin;
+2912b26b-e8b7-4c8c-85b3-ce3e5691cee4	admin@admin.com	$argon2id$v=19$m=65536,t=3,p=4$pExQZ4fuFcb4d8rPwUHB8g$WnVfC8mDfm2DGjIF9P5skQWpgMRCYcUsd5q8IVJWU70
 \.
 
 

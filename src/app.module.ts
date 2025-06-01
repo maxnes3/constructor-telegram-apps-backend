@@ -6,16 +6,20 @@ import { CodebaseModule } from './codebase/codebase.module';
 import { BuildModule } from './build/build.module';
 import { ScreenModule } from './screen/screen.module';
 import { AuthModule } from './auth/auth.module';
+import { ConfigModule } from '@nestjs/config';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     TemplateModule,
     CategoryModule,
     ProjectModule,
     CodebaseModule,
     BuildModule,
     ScreenModule,
-    AuthModule
+    AuthModule,
+    UserModule
   ]
 })
 export class AppModule {}
