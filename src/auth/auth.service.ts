@@ -115,7 +115,8 @@ export class AuthService {
       httpOnly: true,
       domain: 'localhost',
       expires: expiresIn,
-      sameSite: 'none'
+      secure: true,
+      sameSite: 'lax'
     });
   }
 
@@ -131,7 +132,8 @@ export class AuthService {
       httpOnly: true,
       domain: 'localhost',
       expires: expiresIn,
-      sameSite: 'none'
+      secure: true,
+      sameSite: 'lax'
     });
   }
 

@@ -31,13 +31,17 @@ export class BuildService {
     }
   }
 
-  async getForOS(currentOS: string) {
+  async getForOS(currentOS?: string) {
     this.logger.debug(`Pull build files by os: ${currentOS}`);
-    return this.prismaService.builds.findMany({
-      where: {
-        OR: [{ os: currentOS }, { os: 'all' }]
-      }
-    });
+    if (currentOS) {
+      return this.prismaService.builds.findMany({
+        where: { os: currentOS }
+      });
+    } else {
+      return this.prismaService.builds.findMany({
+        where: { os: 'all' }
+      });
+    }
   }
 
   async create(data: BuildCreateDto) {

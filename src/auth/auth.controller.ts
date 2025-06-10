@@ -1,19 +1,32 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   Post,
   Req,
   Res,
   UnauthorizedException,
+  UseGuards,
   UsePipes,
   ValidationPipe
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOkResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiUnauthorizedResponse
+} from '@nestjs/swagger';
 import { AuthRequestDto } from './dto/auth.request';
 import { LoggerService } from '@/logger';
 import { Request, Response } from 'express';
+import { CurrentUser } from './decorators';
+import { JwtAuthGuard } from './guards/jwt.guard';
+import { AuthResponseDto } from './dto';
+import { Users } from '@prisma/client';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -25,6 +38,17 @@ export class AuthController {
   ) {
     this.logger.setContext(AuthController.name);
     this.routePrefix = 'api/auth';
+  }
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get current authorized user' })
+  @ApiOkResponse({ description: 'Current user info returned.' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized.' })
+  async getAuthUser(@CurrentUser() user: Users): Promise<AuthResponseDto> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...authUser } = user;
+    return authUser;
   }
 
   @Post('signin')
@@ -40,7 +64,7 @@ export class AuthController {
   async signIn(
     @Body() dto: AuthRequestDto,
     @Res({ passthrough: true }) res: Response
-  ) {
+  ): Promise<AuthResponseDto> {
     this.logger.debug(`Execute handle: ${this.routePrefix}/signin`);
     const {
       refreshToken,
@@ -71,7 +95,7 @@ export class AuthController {
   async signUp(
     @Body() dto: AuthRequestDto,
     @Res({ passthrough: true }) res: Response
-  ) {
+  ): Promise<AuthResponseDto> {
     this.logger.debug(`Execute handle: ${this.routePrefix}/signup`);
     const {
       refreshToken,
@@ -106,7 +130,7 @@ export class AuthController {
   async getNewTokens(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response
-  ) {
+  ): Promise<AuthResponseDto> {
     this.logger.debug('Pull refreshToken from response');
     const refreshTokenFromCookies =
       this.authService.isRefreshTokenInRequest(req);

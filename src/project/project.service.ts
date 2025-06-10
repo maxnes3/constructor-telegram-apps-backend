@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { TemplateService } from '@template/index';
 import { ProjectRequestDto } from './dto';
 import { Response } from 'express';
@@ -15,8 +15,10 @@ import { ScreenCreateDto } from '@/screen/dto';
 import { JSReactComponentExport } from './types';
 import { LoggerService } from '@logger/index';
 
+const PROJECT_TEMPLATE_NAME = '__project_template';
+
 @Injectable()
-export class ProjectService {
+export class ProjectService implements OnModuleInit, OnModuleDestroy {
   constructor(
     private readonly screenService: ScreenService,
     private readonly templateService: TemplateService,
@@ -24,6 +26,48 @@ export class ProjectService {
     private readonly logger: LoggerService
   ) {
     this.logger.setContext(ProjectService.name);
+  }
+
+  async onModuleDestroy() {
+    await this.removeNodeModules();
+  }
+
+  async onModuleInit() {
+    await this.pullNodeModules();
+  }
+
+  async pullNodeModules() {
+    this.logger.debug('Build Projects Build Template');
+    const rootProjectPath = await FileSystemHelper.createDirectory(
+      `./${BuildHelper.getWorkDirectory()}/${PROJECT_TEMPLATE_NAME}`
+    );
+    const sourcePath = await FileSystemHelper.createDirectory(
+      `${rootProjectPath}/src`
+    );
+    await this.generateBuildRootFiles({
+      rootPath: rootProjectPath,
+      sourcePath: sourcePath
+    });
+
+    const buildCommands = ['npm cache clean --force', 'npm install'];
+    for (const command of buildCommands) {
+      this.logger.debug(`Execute command: ${command}`);
+      await TerminalHelper.executeCommand({
+        command,
+        path: rootProjectPath
+      });
+    }
+
+    const nodeModulesPath = `${rootProjectPath}/node_modules`;
+    await FileSystemHelper.removeDirectory(nodeModulesPath);
+  }
+
+  async removeNodeModules() {
+    const projectTemplatePath = `./${BuildHelper.getWorkDirectory()}/${PROJECT_TEMPLATE_NAME}`;
+    this.logger.debug(
+      `Removing ${PROJECT_TEMPLATE_NAME} directory at path: ${projectTemplatePath}`
+    );
+    await FileSystemHelper.removeDirectory(projectTemplatePath);
   }
 
   // TODO: Implement this method
@@ -61,11 +105,15 @@ export class ProjectService {
   async downloadProjectZip(data: ProjectRequestDto, res: Response) {
     const { name, screens, browserOS } = data;
 
-    const formatedProjectName = name.trim().replace(' ', '');
+    const formatedProjectName = name.trim().replace(/ /g, '');
+    const hash = Date.now().toString(36);
+    const uniqueProjectDirName = `${formatedProjectName}_${hash}`;
 
-    const rootProjectPath = await FileSystemHelper.createDirectory(
-      `./${BuildHelper.getWorkDirectory()}/${formatedProjectName}`
-    );
+    const rootProjectPath = `./${BuildHelper.getWorkDirectory()}/${uniqueProjectDirName}`;
+    await FileSystemHelper.copyDirectory({
+      src: `./${BuildHelper.getWorkDirectory()}/${PROJECT_TEMPLATE_NAME}`,
+      dest: rootProjectPath
+    });
 
     const sourcePath = await FileSystemHelper.createDirectory(
       `${rootProjectPath}/src`
@@ -271,7 +319,7 @@ export class ProjectService {
   private async buildProject({ path }: { path: string }) {
     const buildCommands = [
       'npm cache clean --force',
-      'npm install',
+      'npm ci',
       'npm run lint:fix',
       'npm run build'
     ];
